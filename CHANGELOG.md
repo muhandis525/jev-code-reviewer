@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 - 2026-09-22
+
+- Re-license the project from the MIT License to the Apache License 2.0.
+- Align package metadata, documentation, notices, and release installation
+  instructions with the new license and version.
+
 ## 0.3.0 - 2026-09-22
 
 - Add 11 Java security rules for weak cryptography, weak randomness, insecure

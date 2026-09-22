@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jev-code-reviewer"
-version = "0.3.0"
+version = "0.3.1"
 description = "Token-efficient probabilistic triage for local static-analysis findings"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "MIT"
+license = "Apache-2.0"
 authors = [{name = "Muhammad"}]
 dependencies = [
   "requests>=2.32,<3",

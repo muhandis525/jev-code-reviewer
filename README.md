@@ -1,7 +1,7 @@
 # Jev Code Reviewer
 
 [![tests](https://github.com/muhandis525/jev-code-reviewer/actions/workflows/test.yml/badge.svg)](https://github.com/muhandis525/jev-code-reviewer/actions/workflows/test.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![license: Apache--2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)](SECURITY.md)
 
 An experimental, line-accurate code-review CLI that combines deterministic
@@ -65,7 +65,7 @@ python -m pip install -e .
 From GitHub:
 
 ```bash
-python -m pip install "git+https://github.com/muhandis525/jev-code-reviewer.git@v0.3.0"
+python -m pip install "git+https://github.com/muhandis525/jev-code-reviewer.git@v0.3.1"
 ```
 
 Supply your own Jev key. Keys are never bundled or auto-discovered from private
