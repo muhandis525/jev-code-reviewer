@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.semgrep/
+.ruff_cache/
+.coverage
+htmlcov/
+reports/
+dist/
+.env
+jev.txt
+.jev-review-cache.json
+*.egg-info/
+build/
+.benchmarks/
+.DS_Store

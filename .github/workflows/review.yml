@@ -1,0 +1,30 @@
+name: jev-review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -e .
+      - name: Review changed lines without external source upload
+        run: >-
+          jev-review . --offline
+          --changed-since ${{ github.event.pull_request.base.sha }}
+          --format sarif --output jev-review.sarif --fail-on never
+      - uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        with:
+          sarif_file: jev-review.sarif

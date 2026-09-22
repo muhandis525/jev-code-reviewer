@@ -1,0 +1,28 @@
+{
+  "tool_version": "0.3.0",
+  "vul4j_revision": "376411da11fa705019f731404de1d0679fe73537",
+  "cases_requested": 129,
+  "cases_materialized": 128,
+  "changed_java_files": 305,
+  "cases_with_expected_cwe": 65,
+  "excluded": {
+    "vul_id": "VUL4J-23",
+    "reason": "fixing commit unavailable from the current upstream Git remote"
+  },
+  "bundled_offline": {
+    "file_hits": 29,
+    "file_hit_recall": 0.2266,
+    "patch_line_hits": 3,
+    "patch_line_recall": 0.0234,
+    "strict_cwe_patch_line_hits": 0,
+    "strict_cwe_recall": 0.0
+  },
+  "semgrep_registry_auto_plus_bundled": {
+    "file_hits": 45,
+    "file_hit_recall": 0.3516,
+    "patch_line_hits": 6,
+    "patch_line_recall": 0.0469,
+    "strict_cwe_patch_line_hits": 1,
+    "strict_cwe_recall": 0.0154
+  }
+}

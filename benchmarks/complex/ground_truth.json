@@ -1,0 +1,29 @@
+{
+  "description": "Adversarial multi-language benchmark; labels are intentionally kept outside source files.",
+  "issues": [
+    {"id": "PY-SECRET", "path": "python_service.py", "line": 10, "category": "security", "severity": "high", "title": "Hardcoded administrative token"},
+    {"id": "PY-SQLI", "path": "python_service.py", "line": 16, "lines": [15, 16], "category": "security", "severity": "critical", "title": "Request data reaches interpolated SQL"},
+    {"id": "PY-CMDI", "path": "python_service.py", "line": 27, "category": "security", "severity": "critical", "title": "Request data reaches a shell"},
+    {"id": "PY-PICKLE", "path": "python_service.py", "line": 35, "category": "security", "severity": "critical", "title": "Untrusted pickle deserialization"},
+    {"id": "PY-MUTABLE", "path": "python_service.py", "line": 42, "category": "correctness", "severity": "high", "title": "Mutable default argument"},
+    {"id": "PY-OFFBYONE", "path": "python_service.py", "line": 48, "category": "correctness", "severity": "high", "title": "Off-by-one bounds check"},
+    {"id": "PY-SSRF", "path": "python_service.py", "line": 55, "category": "security", "severity": "high", "title": "User-controlled outbound request"},
+    {"id": "PY-TIMEOUT", "path": "python_service.py", "line": 55, "category": "reliability", "severity": "medium", "title": "Outbound request has no timeout"},
+    {"id": "PY-FILELEAK", "path": "python_service.py", "line": 59, "category": "reliability", "severity": "medium", "title": "File handle is not closed"},
+    {"id": "PY-BARE", "path": "python_service.py", "line": 66, "category": "reliability", "severity": "medium", "title": "Bare exception handler"},
+    {"id": "PY-SWALLOW", "path": "python_service.py", "line": 67, "category": "reliability", "severity": "high", "title": "Exception is silently swallowed"},
+
+    {"id": "TS-XSS", "path": "frontend.ts", "line": 4, "category": "security", "severity": "high", "title": "Untrusted data written to innerHTML"},
+    {"id": "TS-EVAL", "path": "frontend.ts", "line": 12, "category": "security", "severity": "high", "title": "Dynamic code execution"},
+    {"id": "TS-EQUALITY", "path": "frontend.ts", "line": 16, "category": "correctness", "severity": "low", "title": "Coercive equality"},
+    {"id": "TS-AWAIT", "path": "frontend.ts", "line": 27, "category": "correctness", "severity": "high", "title": "Promise is not awaited before redirect"},
+
+    {"id": "GO-GETERR", "path": "worker.go", "line": 10, "category": "reliability", "severity": "high", "title": "HTTP error ignored before dereference"},
+    {"id": "GO-READERR", "path": "worker.go", "line": 13, "category": "reliability", "severity": "medium", "title": "Response body read errors ignored"},
+    {"id": "GO-LEAK", "path": "worker.go", "line": 18, "category": "reliability", "severity": "medium", "title": "Goroutine has no cancellation path"},
+
+    {"id": "C-ALLOC", "path": "native.c", "line": 7, "category": "correctness", "severity": "critical", "title": "Allocation omits NUL terminator and is unchecked"},
+    {"id": "C-STRCPY", "path": "native.c", "line": 8, "category": "security", "severity": "high", "title": "Unbounded copy into undersized buffer"},
+    {"id": "C-SPRINTF", "path": "native.c", "line": 13, "category": "security", "severity": "high", "title": "Unbounded formatted output"}
+  ]
+}

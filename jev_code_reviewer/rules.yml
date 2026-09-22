@@ -1,0 +1,753 @@
+rules:
+  - id: jev.python.mutable-default
+    languages: [python]
+    message: Mutable default arguments are shared across calls and can leak state between callers.
+    severity: HIGH
+    metadata:
+      title: Mutable default argument
+      category: correctness
+      cwe: CWE-1188
+      confidence: "0.97"
+    pattern-either:
+      - pattern: |
+          def $F(..., $X=[], ...):
+            ...
+      - pattern: |
+          def $F(..., $X={}, ...):
+            ...
+
+  - id: jev.python.bare-except
+    languages: [python]
+    message: A bare except catches process-control exceptions and can conceal unexpected failures.
+    severity: MEDIUM
+    metadata:
+      title: Bare exception handler
+      category: reliability
+      cwe: CWE-396
+      confidence: "0.92"
+    pattern: |
+      try:
+        ...
+      except:
+        ...
+
+  - id: jev.python.shell-true
+    languages: [python]
+    message: Shell execution can become command injection when any argument is influenced by untrusted data.
+    severity: HIGH
+    metadata:
+      title: Shell command execution
+      category: security
+      cwe: CWE-78
+    patterns:
+      - pattern: subprocess.$F(..., shell=True, ...)
+
+  - id: jev.python.flask-command-injection
+    languages: [python]
+    mode: taint
+    message: Request-controlled data reaches a shell command without a recognized sanitizer.
+    severity: CRITICAL
+    metadata:
+      title: Request data reaches shell execution
+      category: security
+      cwe: CWE-78
+      confidence: "0.96"
+    pattern-sources:
+      - pattern-either:
+          - pattern: flask.request.$FIELD
+          - pattern: request.args.get(...)
+          - pattern: request.form.get(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: os.system(...)
+          - pattern: subprocess.$F(..., shell=True, ...)
+
+  - id: jev.python.flask-sql-injection
+    languages: [python]
+    mode: taint
+    message: Request-controlled data reaches a database query string without a recognized parameterization barrier.
+    severity: CRITICAL
+    metadata:
+      title: Request data reaches SQL execution
+      category: security
+      cwe: CWE-89
+      confidence: "0.96"
+    pattern-sources:
+      - pattern-either:
+          - pattern: flask.request.$FIELD
+          - pattern: request.args.get(...)
+          - pattern: request.form.get(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $CURSOR.execute(...)
+          - pattern: $CURSOR.executemany(...)
+
+  - id: jev.python.unsafe-deserialization
+    languages: [python]
+    message: Deserializing untrusted pickle data can execute arbitrary code.
+    severity: CRITICAL
+    metadata:
+      title: Unsafe pickle deserialization
+      category: security
+      cwe: CWE-502
+      confidence: "0.95"
+    pattern-either:
+      - pattern: pickle.load(...)
+      - pattern: pickle.loads(...)
+
+  - id: jev.python.eval
+    languages: [python]
+    message: Dynamic code evaluation can execute attacker-controlled code.
+    severity: HIGH
+    metadata:
+      title: Dynamic code execution
+      category: security
+      cwe: CWE-95
+      confidence: "0.92"
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+
+  - id: jev.javascript.eval
+    languages: [javascript, typescript]
+    message: Dynamic code evaluation can execute attacker-controlled code.
+    severity: HIGH
+    metadata:
+      title: Dynamic code execution
+      category: security
+      cwe: CWE-95
+      confidence: "0.92"
+    pattern: eval(...)
+
+  - id: jev.javascript.inner-html
+    languages: [javascript, typescript]
+    message: Assigning dynamic content to innerHTML can enable cross-site scripting unless it is sanitized.
+    severity: HIGH
+    metadata:
+      title: Potential DOM cross-site scripting
+      category: security
+      cwe: CWE-79
+      confidence: "0.70"
+    pattern: $ELEMENT.innerHTML = $VALUE
+
+  - id: jev.javascript.command-exec
+    languages: [javascript, typescript]
+    message: Executing a constructed shell string can enable command injection.
+    severity: HIGH
+    metadata:
+      title: Shell command execution
+      category: security
+      cwe: CWE-78
+    pattern-either:
+      - pattern: exec($CMD, ...)
+      - pattern: child_process.exec($CMD, ...)
+
+  - id: jev.go.ignored-error
+    languages: [go]
+    message: Ignoring a returned error can let execution continue with invalid state.
+    severity: MEDIUM
+    metadata:
+      title: Ignored Go error
+      category: reliability
+      confidence: "0.72"
+    pattern: $VALUE, _ := $CALL(...)
+
+  - id: jev.c.dangerous-string-function
+    languages: [c, cpp]
+    message: This string API does not enforce destination bounds and can cause memory corruption.
+    severity: HIGH
+    metadata:
+      title: Unsafe C string operation
+      category: security
+      cwe: CWE-120
+      confidence: "0.94"
+    pattern-either:
+      - pattern: gets(...)
+      - pattern: strcpy(...)
+      - pattern: strcat(...)
+      - pattern: sprintf(...)
+
+  - id: jev.php.unsafe-unserialize
+    languages: [php]
+    message: Deserializing untrusted PHP objects can invoke gadget chains and execute unintended behavior.
+    severity: HIGH
+    metadata:
+      title: Unsafe PHP deserialization
+      category: security
+      cwe: CWE-502
+    pattern: unserialize(...)
+
+  - id: jev.generic.hardcoded-secret
+    languages: [generic]
+    message: A credential-like value appears hardcoded in source; use a secret manager or environment variable.
+    severity: HIGH
+    metadata:
+      title: Possible hardcoded credential
+      category: security
+      cwe: CWE-798
+    pattern-regex: '(?i)\b(password|passwd|api[_-]?key|secret|access[_-]?token)\s*[:=]\s*["''][^"''\n]{8,}["'']'
+
+  - id: jev.generic.insecure-http
+    languages: [generic]
+    message: A non-local HTTP endpoint sends traffic without transport encryption.
+    severity: MEDIUM
+    metadata:
+      title: Unencrypted HTTP endpoint
+      category: security
+      cwe: CWE-319
+    pattern-regex: '["'']http://(?!localhost\b|127\.0\.0\.1\b)[^"'']+["'']'
+
+  - id: jev.python.unsafe-yaml-load
+    languages: [python]
+    message: Unsafe YAML loaders can construct arbitrary Python objects from untrusted documents.
+    severity: HIGH
+    metadata:
+      title: Unsafe YAML deserialization
+      category: security
+      cwe: CWE-502
+      confidence: "0.91"
+    pattern-either:
+      - pattern: yaml.unsafe_load(...)
+      - pattern: yaml.load(..., Loader=yaml.Loader, ...)
+      - pattern: yaml.load(..., Loader=yaml.UnsafeLoader, ...)
+
+  - id: jev.javascript.jwt-decode-without-verify
+    languages: [javascript, typescript]
+    message: Decoding a JWT does not authenticate its signature or claims; use a verification API before trusting it.
+    severity: HIGH
+    metadata:
+      title: JWT decoded without verification
+      category: security
+      cwe: CWE-347
+      confidence: "0.90"
+    pattern-either:
+      - pattern: jwt.decode(...)
+      - pattern: $JWT.decode(...)
+
+  - id: jev.javascript.weak-random-secret
+    languages: [javascript, typescript]
+    message: Math.random is not cryptographically secure and must not generate tokens, reset codes, or secrets.
+    severity: MEDIUM
+    metadata:
+      title: Weak randomness near security-sensitive value
+      category: security
+      cwe: CWE-338
+      confidence: "0.68"
+    patterns:
+      - pattern: $VALUE = Math.random(...)
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: '(?i).*(token|secret|nonce|code|key).*'
+
+  - id: jev.go.shell-command
+    languages: [go]
+    message: Passing a constructed string to a shell interpreter can enable command injection.
+    severity: HIGH
+    metadata:
+      title: Shell command execution
+      category: security
+      cwe: CWE-78
+      confidence: "0.88"
+    pattern-either:
+      - pattern: exec.Command("sh", "-c", $CMD, ...)
+      - pattern: exec.Command("bash", "-c", $CMD, ...)
+
+  - id: jev.go.insecure-tls
+    languages: [go]
+    message: Disabling TLS certificate verification permits machine-in-the-middle attacks.
+    severity: HIGH
+    metadata:
+      title: TLS certificate verification disabled
+      category: security
+      cwe: CWE-295
+      confidence: "0.97"
+    pattern: 'tls.Config{..., InsecureSkipVerify: true, ...}'
+
+  - id: jev.java.runtime-exec-concatenation
+    languages: [java]
+    message: A concatenated command string passed to Runtime.exec can allow shell or argument injection.
+    severity: HIGH
+    metadata:
+      title: Constructed process command
+      category: security
+      cwe: CWE-78
+      confidence: "0.78"
+    pattern: Runtime.getRuntime().exec($A + $B)
+
+  - id: jev.java.sql-concatenation
+    languages: [java]
+    message: SQL constructed through string concatenation can allow SQL injection; use PreparedStatement parameters.
+    severity: HIGH
+    metadata:
+      title: Concatenated SQL execution
+      category: security
+      cwe: CWE-89
+      confidence: "0.79"
+    pattern-either:
+      - pattern: $STMT.executeQuery($A + $B)
+      - pattern: $STMT.executeUpdate($A + $B)
+      - pattern: $STMT.execute($A + $B)
+
+  - id: jev.java.object-deserialization
+    languages: [java]
+    message: Java native object deserialization is unsafe when the stream can contain untrusted data.
+    severity: HIGH
+    metadata:
+      title: Native Java deserialization
+      category: security
+      cwe: CWE-502
+      confidence: "0.73"
+    pattern: $STREAM.readObject()
+
+  - id: jev.java.weak-message-digest
+    languages: [java]
+    message: MD2, MD4, MD5, and SHA-1 are obsolete for security-sensitive hashing; use a modern password KDF or SHA-256+ as appropriate.
+    severity: HIGH
+    metadata:
+      title: Weak cryptographic hash
+      category: security
+      cwe: CWE-328
+      confidence: "0.98"
+    patterns:
+      - pattern-either:
+          - pattern: java.security.MessageDigest.getInstance($ALGORITHM)
+          - pattern: java.security.MessageDigest.getInstance($ALGORITHM, ...)
+      - metavariable-regex:
+          metavariable: $ALGORITHM
+          regex: '"(?i:MD2|MD4|MD5|SHA|SHA1|SHA-1)"'
+
+  - id: jev.java.weak-cipher
+    languages: [java]
+    message: The selected cipher is obsolete or has an unsafe effective key size; use a modern authenticated cipher such as AES-GCM.
+    severity: HIGH
+    metadata:
+      title: Weak encryption algorithm
+      category: security
+      cwe: CWE-327
+      confidence: "0.98"
+    patterns:
+      - pattern-either:
+          - pattern: javax.crypto.Cipher.getInstance($ALGORITHM)
+          - pattern: javax.crypto.Cipher.getInstance($ALGORITHM, ...)
+      - metavariable-regex:
+          metavariable: $ALGORITHM
+          regex: '"(?i:(?:DES|DESEDE|TRIPLEDES|RC2|RC4|ARCFOUR|BLOWFISH)(?:/[^" ]*)?)"'
+
+  - id: jev.java.weak-security-random
+    languages: [java]
+    message: java.util.Random and Math.random are predictable and must not generate tokens, session secrets, nonces, or cryptographic keys.
+    severity: HIGH
+    metadata:
+      title: Predictable security-sensitive random value
+      category: security
+      cwe: CWE-330
+      confidence: "0.96"
+    pattern-either:
+      - pattern: new java.util.Random(...)
+      - pattern: new Random(...)
+      - pattern: Math.random()
+
+  - id: jev.java.insecure-cookie-flag
+    languages: [java]
+    message: Explicitly disabling a cookie's Secure flag allows it to cross an unencrypted connection.
+    severity: HIGH
+    metadata:
+      title: Cookie Secure flag disabled
+      category: security
+      cwe: CWE-614
+      confidence: "0.99"
+    pattern: $COOKIE.setSecure(false)
+
+  - id: jev.java.servlet-command-injection
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input reaches process creation without a recognized command or argument sanitizer.
+    severity: CRITICAL
+    metadata:
+      title: Servlet input reaches process execution
+      category: security
+      cwe: CWE-78
+      confidence: "0.82"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $RUNTIME.exec(...)
+          - pattern: new ProcessBuilder(...)
+          - pattern: $BUILDER.command(...)
+
+  - id: jev.java.servlet-sql-injection
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input reaches SQL execution without a recognized parameterization barrier.
+    severity: CRITICAL
+    metadata:
+      title: Servlet input reaches SQL execution
+      category: security
+      cwe: CWE-89
+      confidence: "0.82"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $STATEMENT.execute(...)
+          - pattern: $STATEMENT.executeQuery(...)
+          - pattern: $STATEMENT.executeUpdate(...)
+          - pattern: $CONNECTION.prepareStatement(...)
+          - pattern: $TEMPLATE.query(...)
+          - pattern: $TEMPLATE.queryForObject(...)
+          - pattern: $TEMPLATE.update(...)
+          - pattern: $TEMPLATE.execute(...)
+
+  - id: jev.java.servlet-xss
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input reaches an HTTP response without a recognized HTML encoder.
+    severity: HIGH
+    metadata:
+      title: Reflected cross-site scripting
+      category: security
+      cwe: CWE-79
+      confidence: "0.80"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: org.owasp.esapi.ESAPI.encoder().encodeForHTML(...)
+          - pattern: org.owasp.benchmark.helpers.Utils.encodeForHTML(...)
+          - pattern: org.apache.commons.lang.StringEscapeUtils.escapeHtml(...)
+          - pattern: org.springframework.web.util.HtmlUtils.htmlEscape(...)
+          - pattern: Encode.forHtml(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $RESPONSE.getWriter().print(...)
+          - pattern: $RESPONSE.getWriter().println(...)
+          - pattern: $RESPONSE.getWriter().write(...)
+
+  - id: jev.java.servlet-path-traversal
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input reaches a filesystem path without normalization and containment validation.
+    severity: HIGH
+    metadata:
+      title: Servlet input reaches filesystem access
+      category: security
+      cwe: CWE-22
+      confidence: "0.78"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: new java.io.File(...)
+          - pattern: new java.io.FileInputStream(...)
+          - pattern: new java.io.FileOutputStream(...)
+          - pattern: new java.io.FileReader(...)
+          - pattern: new java.io.FileWriter(...)
+          - pattern: new java.io.RandomAccessFile(...)
+
+  - id: jev.java.servlet-ldap-injection
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input reaches an LDAP search filter without a recognized LDAP encoder.
+    severity: HIGH
+    metadata:
+      title: Servlet input reaches LDAP query
+      category: security
+      cwe: CWE-90
+      confidence: "0.80"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: org.owasp.esapi.ESAPI.encoder().encodeForLDAP(...)
+          - pattern: Encode.forLDAP(...)
+    pattern-sinks:
+      - pattern: $CONTEXT.search(...)
+
+  - id: jev.java.servlet-xpath-injection
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input reaches XPath compilation or evaluation without a recognized protection boundary.
+    severity: HIGH
+    metadata:
+      title: Servlet input reaches XPath query
+      category: security
+      cwe: CWE-643
+      confidence: "0.80"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $XPATH.compile(...)
+          - pattern: $XPATH.evaluate(...)
+
+  - id: jev.java.servlet-trust-boundary
+    languages: [java]
+    mode: taint
+    message: Servlet-controlled input is stored in a session trust boundary without validation.
+    severity: MEDIUM
+    metadata:
+      title: Unvalidated data crosses session trust boundary
+      category: security
+      cwe: CWE-501
+      confidence: "0.72"
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getParameterNames()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getHeaderNames()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getCookies()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+          - pattern: $SOURCE.getTheParameter(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $SESSION.setAttribute(...)
+          - pattern: $SESSION.putValue(...)
+
+  - id: jev.csharp.binary-formatter
+    languages: [csharp]
+    message: BinaryFormatter deserialization is unsafe for untrusted data and is obsolete in modern .NET.
+    severity: CRITICAL
+    metadata:
+      title: Unsafe .NET deserialization
+      category: security
+      cwe: CWE-502
+      confidence: "0.94"
+    pattern: $FORMATTER.Deserialize(...)
+
+  - id: jev.csharp.sync-over-async
+    languages: [csharp]
+    message: Blocking on a Task can deadlock synchronization contexts and exhaust server threads; await it instead.
+    severity: MEDIUM
+    metadata:
+      title: Synchronous wait on asynchronous work
+      category: reliability
+      cwe: CWE-667
+      confidence: "0.66"
+    pattern-either:
+      - pattern: $TASK.Result
+      - pattern: $TASK.Wait(...)
+
+  - id: jev.csharp.sql-interpolation
+    languages: [csharp]
+    message: Interpolated SQL passed to SqlCommand can allow SQL injection; use SqlParameter values.
+    severity: HIGH
+    metadata:
+      title: Interpolated SQL command
+      category: security
+      cwe: CWE-89
+      confidence: "0.80"
+    pattern-regex: 'new\s+SqlCommand\s*\(\s*\$"'
+
+  - id: jev.ruby.marshal-load
+    languages: [ruby]
+    message: Marshal.load can instantiate arbitrary Ruby objects and must not process untrusted bytes.
+    severity: CRITICAL
+    metadata:
+      title: Unsafe Ruby deserialization
+      category: security
+      cwe: CWE-502
+      confidence: "0.94"
+    pattern: Marshal.load(...)
+
+  - id: jev.ruby.unsafe-yaml-load
+    languages: [ruby]
+    message: YAML.load can construct arbitrary objects; use YAML.safe_load with a minimal allowlist.
+    severity: HIGH
+    metadata:
+      title: Unsafe YAML deserialization
+      category: security
+      cwe: CWE-502
+      confidence: "0.91"
+    pattern-either:
+      - pattern: YAML.load(...)
+      - pattern: Psych.load(...)
+
+  - id: jev.ruby.eval
+    languages: [ruby]
+    message: Dynamic evaluation executes code and becomes exploitable when any value is externally influenced.
+    severity: HIGH
+    metadata:
+      title: Dynamic Ruby code execution
+      category: security
+      cwe: CWE-95
+      confidence: "0.77"
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: class_eval(...)
+      - pattern: instance_eval(...)
+
+  - id: jev.rust.transmute
+    languages: [rust]
+    message: transmute bypasses Rust's type and validity checks; verify size, alignment, bit validity, and a safe alternative.
+    severity: HIGH
+    metadata:
+      title: Unsafe memory transmutation
+      category: security
+      cwe: CWE-704
+      confidence: "0.72"
+    pattern-either:
+      - pattern: std::mem::transmute(...)
+      - pattern: core::mem::transmute(...)
+
+  - id: jev.rust.unsafe-send-sync
+    languages: [rust]
+    message: Manually asserting Send or Sync can create data races or undefined behavior if every invariant is not upheld.
+    severity: HIGH
+    metadata:
+      title: Manual thread-safety assertion
+      category: reliability
+      cwe: CWE-362
+      confidence: "0.70"
+    pattern-either:
+      - pattern: 'unsafe impl Send for $TYPE { ... }'
+      - pattern: 'unsafe impl Sync for $TYPE { ... }'
+
+  - id: jev.kotlin.runtime-exec-concatenation
+    languages: [kotlin]
+    message: A concatenated command string passed to Runtime.exec can allow shell or argument injection.
+    severity: HIGH
+    metadata:
+      title: Constructed process command
+      category: security
+      cwe: CWE-78
+      confidence: "0.78"
+    pattern: Runtime.getRuntime().exec($A + $B)
+
+  - id: jev.kotlin.webview-javascript-interface
+    languages: [kotlin]
+    message: Exposing a native object to WebView JavaScript creates a dangerous bridge when content is not fully trusted.
+    severity: HIGH
+    metadata:
+      title: WebView native JavaScript bridge
+      category: security
+      cwe: CWE-749
+      confidence: "0.68"
+    pattern: $WEBVIEW.addJavascriptInterface(...)
+
+  - id: jev.swift.forced-try
+    languages: [swift]
+    message: try! terminates the process when the operation throws; propagate or handle the error instead.
+    severity: MEDIUM
+    metadata:
+      title: Forced throwing operation
+      category: reliability
+      cwe: CWE-248
+      confidence: "0.72"
+    pattern-regex: '\btry!\s+'
+
+  - id: jev.swift.legacy-unarchive
+    languages: [swift]
+    message: Legacy unarchiving of untrusted archives can instantiate unexpected object graphs.
+    severity: HIGH
+    metadata:
+      title: Potentially unsafe object unarchiving
+      category: security
+      cwe: CWE-502
+      confidence: "0.68"
+    pattern: NSKeyedUnarchiver.unarchiveObject(...)
+
+  - id: jev.docker.root-user
+    languages: [dockerfile]
+    message: Containers should run as a non-root user unless root is explicitly required and constrained.
+    severity: MEDIUM
+    metadata:
+      title: Container runs as root
+      category: security
+      cwe: CWE-250
+      confidence: "0.70"
+    pattern: USER root
+
+  - id: jev.terraform.public-ingress
+    languages: [terraform]
+    message: An ingress rule open to the entire internet needs explicit review and should be restricted where possible.
+    severity: HIGH
+    metadata:
+      title: Public network ingress
+      category: security
+      cwe: CWE-284
+      confidence: "0.68"
+    patterns:
+      - pattern-inside: |
+          ingress {
+            ...
+          }
+      - pattern: cidr_blocks = [..., "0.0.0.0/0", ...]

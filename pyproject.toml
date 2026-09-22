@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-code-reviewer"
+version = "0.3.0"
+description = "Token-efficient probabilistic triage for local static-analysis findings"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Muhammad"}]
+dependencies = [
+  "requests>=2.32,<3",
+  "semgrep>=1.177,<2",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Security",
+]
+
+[project.urls]
+Homepage = "https://github.com/muhandis525/jev-code-reviewer"
+Repository = "https://github.com/muhandis525/jev-code-reviewer.git"
+Issues = "https://github.com/muhandis525/jev-code-reviewer/issues"
+Changelog = "https://github.com/muhandis525/jev-code-reviewer/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["ruff>=0.13,<1"]
+
+[project.scripts]
+jev-review = "jev_code_reviewer.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["jev_code_reviewer*"]
+
+[tool.setuptools.package-data]
+jev_code_reviewer = ["rules.yml"]

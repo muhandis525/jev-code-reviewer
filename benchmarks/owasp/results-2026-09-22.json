@@ -1,0 +1,50 @@
+{
+  "tool_version": "0.3.0",
+  "corpus": "OWASP Benchmark Java 1.2",
+  "corpus_revision": "20cbf3d11123347e47ed89541e6942836def53f7",
+  "mode": "bundled Semgrep rules, offline",
+  "runtime_seconds": 342.41,
+  "baseline": {
+    "findings": 35,
+    "true_positives": 0,
+    "false_positives": 0,
+    "false_negatives": 1415,
+    "true_negatives": 1325,
+    "owasp_score": 0.0
+  },
+  "final": {
+    "all": {
+      "cases": 2740,
+      "true_positives": 1076,
+      "false_positives": 420,
+      "false_negatives": 339,
+      "true_negatives": 905,
+      "precision": 0.7193,
+      "recall": 0.7604,
+      "false_positive_rate": 0.3170,
+      "f1": 0.7393,
+      "mcc": 0.4451,
+      "owasp_score": 0.4434
+    },
+    "development": {
+      "cases": 548,
+      "precision": 0.7071,
+      "recall": 0.7447,
+      "false_positive_rate": 0.3271,
+      "owasp_score": 0.4176
+    },
+    "held_out": {
+      "cases": 2192,
+      "true_positives": 866,
+      "false_positives": 333,
+      "false_negatives": 267,
+      "true_negatives": 726,
+      "precision": 0.7223,
+      "recall": 0.7643,
+      "false_positive_rate": 0.3144,
+      "f1": 0.7427,
+      "mcc": 0.4516,
+      "owasp_score": 0.4499
+    }
+  }
+}
